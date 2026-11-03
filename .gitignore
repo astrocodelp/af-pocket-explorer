@@ -6,4 +6,3 @@ data/DEMO_CREDENTIALS.txt
 data/study/
 __pycache__/
 *.pyc
-dist/

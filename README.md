@@ -105,4 +105,4 @@ Seed data is regenerated with `python3 gen_synthetic.py` (needs numpy only).
 
 ## Static Vercel demo
 
-`python3 build_static.py` builds `dist/`: a read-only copy with the four synthetic proteins embedded. No server, login, accounts, imports, study tab or audit trail. Deploy `dist/` as a static site. It refuses to embed any structure that is not flagged synthetic. The full app (roles, audit trail, encrypted store) needs a long-running server with a persistent disk and does not run on Vercel's serverless platform.
+`python3 build_static.py` builds `dist/` (committed, so Vercel can deploy it straight from Git with root directory `dist`): a read-only copy with the four synthetic proteins embedded. No server, login, accounts, imports, study tab or audit trail. Deploy `dist/` as a static site. It refuses to embed any structure that is not flagged synthetic. The full app (roles, audit trail, encrypted store) needs a long-running server with a persistent disk and does not run on Vercel's serverless platform.
