@@ -40,6 +40,9 @@ class App:
         self.audit = AuditLog(data_dir, akey)
         self.users = Users(data_dir)
         self.sessions = Sessions()
+        # Passwordless demo sign-in: one click per demo account. Synthetic demo only; forced off unless
+        # the server listens on loopback (see main()). Set AFPE_PASSWORDLESS=0 to require passwords.
+        self.passwordless = os.environ.get("AFPE_PASSWORDLESS", "1") != "0"
         self.seed(data_dir)
 
     def seed(self, data_dir):
@@ -123,6 +126,9 @@ def make_handler(app):
             path = self.path.split("?")[0]
             if not path.startswith("/api/"):
                 return self._static(path)
+            if path == "/api/config":
+                return self._send(200, {"passwordless": app.passwordless,
+                                        "demo_users": [{"user": u, "role": v["role"]} for u, v in app.users.users.items()] if app.passwordless else []})
             if path == "/api/me":
                 s = self._session()
                 if not s:
@@ -207,6 +213,16 @@ def make_handler(app):
                 app.audit.record(user, role, "login", "", "ok", self._ip())
                 return self._send(200, {"user": user, "role": role}, extra={
                     "Set-Cookie": f"{COOKIE}={tok}; HttpOnly; SameSite=Strict; Path=/"})
+            if path == "/api/demo_login":
+                user = str(body.get("user", ""))[:64]
+                u = app.users.users.get(user)
+                if not app.passwordless or not u:
+                    app.audit.record(user, None, "login", "", "failed:passwordless-unavailable", self._ip())
+                    return self._send(403, {"error": "Passwordless demo sign-in is off."})
+                tok = app.sessions.create(user, u["role"])
+                app.audit.record(user, u["role"], "login", "", "ok:passwordless-demo", self._ip())
+                return self._send(200, {"user": user, "role": u["role"]}, extra={
+                    "Set-Cookie": f"{COOKIE}={tok}; HttpOnly; SameSite=Strict; Path=/"})
             if path == "/api/logout":
                 s = self._session()
                 app.sessions.drop(self._token())
@@ -272,6 +288,11 @@ def main():
     host = os.environ.get("AFPE_HOST", "127.0.0.1")
     port = int(os.environ.get("AFPE_PORT", "8765"))
     app = App()
+    if app.passwordless and host not in ("127.0.0.1", "localhost", "::1"):
+        app.passwordless = False
+        print("Passwordless demo sign-in disabled: it is only allowed when AFPE_HOST is loopback.")
+    if app.passwordless:
+        print("Passwordless demo sign-in is ON (one click per demo account; synthetic data only). Set AFPE_PASSWORDLESS=0 to turn it off.")
     if app.users.created:
         print("Created demo accounts (made-up users). Passwords are shown ONCE; they are stored only as scrypt hashes:")
         for u, pw in app.users.created.items():

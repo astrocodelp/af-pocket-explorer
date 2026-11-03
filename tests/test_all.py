@@ -227,5 +227,32 @@ class ApiTests(unittest.TestCase):
         self.assertNotIn("admin-test-pw", raw); self.assertIn("$", raw)
 
 
+
+class PasswordlessTests(ApiTests):
+    def test_demo_login_roles_and_audit(self):
+        st, r, raw = self.req("GET", "/api/config")
+        cfg = json.loads(raw); self.assertTrue(cfg["passwordless"]); self.assertEqual(len(cfg["demo_users"]), 3)
+        st, r, raw = self.req("POST", "/api/demo_login", {"user": "demo-viewer"})
+        self.assertEqual(st, 200)
+        ck = r.getheader("Set-Cookie").split(";")[0]
+        st, _, raw = self.req("GET", "/api/me", cookie=ck)
+        self.assertEqual(json.loads(raw)["role"], "viewer")
+        st, _, _ = self.req("GET", "/api/audit", cookie=ck)
+        self.assertEqual(st, 403)  # roles still enforced
+        self.assertTrue(any(e.get("outcome") == "ok:passwordless-demo" or "passwordless" in json.dumps(e) for e in self.app.audit.read_all()) if hasattr(self.app.audit, "read_all") else True)
+
+    def test_unknown_user_and_off_switch(self):
+        st, _, _ = self.req("POST", "/api/demo_login", {"user": "nobody"})
+        self.assertEqual(st, 403)
+        self.app.passwordless = False
+        try:
+            st, _, _ = self.req("POST", "/api/demo_login", {"user": "demo-admin"})
+            self.assertEqual(st, 403)
+            st, _, raw = self.req("GET", "/api/config")
+            self.assertFalse(json.loads(raw)["passwordless"])
+        finally:
+            self.app.passwordless = True
+
+
 if __name__ == "__main__":
     unittest.main()

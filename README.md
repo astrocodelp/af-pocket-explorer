@@ -22,7 +22,9 @@ On first start it creates three **made-up demo accounts** with random passwords,
 | `demo-analyst` | analyst | + import structures, CSV export, Study tab |
 | `demo-admin` | admin | + read the audit trail |
 
-Options (environment variables): `AFPE_PORT`, `AFPE_HOST` (default `127.0.0.1`; keep it that way), `AFPE_DATA_DIR`, `AFPE_PW_VIEWER|ANALYST|ADMIN` (set known demo passwords on first run), `AFPE_DATA_KEY` / `AFPE_AUDIT_KEY` (base64 of 32 bytes; see below).
+**Passwordless demo sign-in.** The login page shows one button per demo account, no password needed (the password form is still there under it). Roles and the audit trail work exactly as before; these logins are recorded as `ok:passwordless-demo`. It is allowed only when `AFPE_HOST` is loopback and is turned off with `AFPE_PASSWORDLESS=0`. It is for the made-up demo only; never use it with real patient data.
+
+Options (environment variables): `AFPE_PASSWORDLESS` (default 1), `AFPE_PORT`, `AFPE_HOST` (default `127.0.0.1`; keep it that way), `AFPE_DATA_DIR`, `AFPE_PW_VIEWER|ANALYST|ADMIN` (set known demo passwords on first run), `AFPE_DATA_KEY` / `AFPE_AUDIT_KEY` (base64 of 32 bytes; see below).
 
 Tests: `python3 -m unittest discover -s tests -v` (23 tests, synthetic data only). Audit check from the shell: `python3 verify_audit.py`.
 

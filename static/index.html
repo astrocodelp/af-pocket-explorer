@@ -21,13 +21,19 @@
 
 <main id="login" class="card login" hidden>
   <h2>Sign in</h2>
-  <p class="muted">Demo accounts: <code>demo-viewer</code>, <code>demo-analyst</code>, <code>demo-admin</code>. Passwords were printed once when the server first started and saved in <code>data/DEMO_CREDENTIALS.txt</code>.</p>
+  <p class="muted">Demo accounts: <code>demo-viewer</code>, <code>demo-analyst</code>, <code>demo-admin</code> (made-up users; synthetic data only).</p>
+  <div id="demoLogin" hidden>
+    <p><b>Passwordless demo:</b> pick an account to enter. No password needed.</p>
+    <div id="demoBtns" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+  </div>
+  <details id="pwBox"><summary class="muted small">Sign in with a password instead</summary>
   <form id="loginForm" autocomplete="off">
     <label>User <input id="lu" required></label>
     <label>Password <input id="lp" type="password" required></label>
     <button class="primary">Sign in</button>
     <div id="loginErr" class="err"></div>
-  </form>
+  </form></details>
+  <div id="demoErr" class="err"></div>
   <p class="muted small">Roles: <b>viewer</b> reads structures; <b>analyst</b> also imports structures, exports CSV and sees the study tab; <b>admin</b> also reads the audit trail. Every action is logged.</p>
 </main>
 

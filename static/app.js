@@ -37,8 +37,26 @@
   const S = { me: null, list: [], rec: null, pocketIdx: 0, layer: 'conf', viewer: null, marker: null, all: null };
 
   // ---------------------------------------------------------------- login / shell
+  async function loadDemoLogin() {
+    try {
+      const r = await fetch('/api/config'); const c = await r.json();
+      const box = $('demoBtns'); box.innerHTML = '';
+      $('demoLogin').hidden = !c.passwordless;
+      $('pwBox').open = !c.passwordless;
+      (c.demo_users || []).forEach(u => {
+        const b = document.createElement('button'); b.className = 'primary'; b.type = 'button';
+        b.textContent = 'Enter as ' + u.user + ' (' + u.role + ')';
+        b.addEventListener('click', async () => {
+          $('demoErr').textContent = '';
+          try { await api('/api/demo_login', { body: { user: u.user } }); await enter(await api('/api/me')); }
+          catch (e) { $('demoErr').textContent = e.message; }
+        });
+        box.appendChild(b);
+      });
+    } catch (e) { $('pwBox').open = true; }
+  }
   function showLogin() {
-    S.me = null;
+    S.me = null; loadDemoLogin();
     $('login').hidden = false; $('tabs').hidden = true; $('who').hidden = true;
     document.querySelectorAll('.tab').forEach(t => t.hidden = true);
   }
