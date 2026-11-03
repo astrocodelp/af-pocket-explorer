@@ -1,0 +1,8 @@
+data/store/
+data/audit/
+data/.keys/
+data/users.json
+data/DEMO_CREDENTIALS.txt
+data/study/
+__pycache__/
+*.pyc

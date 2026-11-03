@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AF Pocket Explorer - does pLDDT track druggable pockets?</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="brand"><b>AF Pocket Explorer</b><span>does AlphaFold confidence (pLDDT) line up with druggable pockets?</span></div>
+  <nav id="tabs" hidden>
+    <button data-tab="explore" class="on">Explorer</button>
+    <button data-tab="compare">Compare all</button>
+    <button data-tab="study">Study results</button>
+    <button data-tab="audit" id="tab-audit" hidden>Audit trail</button>
+  </nav>
+  <div id="who" hidden><span id="whoText"></span> <button id="logout" class="ghost">Sign out</button></div>
+</header>
+<div class="banner" id="banner">Research demo on SYNTHETIC proteins and made-up pLDDT / pocket data. Not a clinical tool. No patient data belongs here. Runs locally only.</div>
+
+<main id="login" class="card login" hidden>
+  <h2>Sign in</h2>
+  <p class="muted">Demo accounts: <code>demo-viewer</code>, <code>demo-analyst</code>, <code>demo-admin</code>. Passwords were printed once when the server first started and saved in <code>data/DEMO_CREDENTIALS.txt</code>.</p>
+  <form id="loginForm" autocomplete="off">
+    <label>User <input id="lu" required></label>
+    <label>Password <input id="lp" type="password" required></label>
+    <button class="primary">Sign in</button>
+    <div id="loginErr" class="err"></div>
+  </form>
+  <p class="muted small">Roles: <b>viewer</b> reads structures; <b>analyst</b> also imports structures, exports CSV and sees the study tab; <b>admin</b> also reads the audit trail. Every action is logged.</p>
+</main>
+
+<section id="tab-explore" class="tab">
+  <aside class="side">
+    <div class="card">
+      <h3>Structures</h3>
+      <div id="structList" class="list"></div>
+    </div>
+    <div class="card" id="importCard">
+      <h3>Load a structure</h3>
+      <form id="afForm"><input id="afId" placeholder="UniProt / AF ID, e.g. P00533 or AF-P00533-F1">
+        <button class="primary">Fetch from AlphaFold DB</button></form>
+      <p class="muted small">Needs internet. Pockets come from a small built-in toy grid detector, not fpocket. Experimental PDB IDs (e.g. 1ABC) have no pLDDT and are refused.</p>
+      <label class="file">or upload an AlphaFold PDB file <input type="file" id="pdbFile" accept=".pdb,.ent,.txt"></label>
+      <div id="importMsg" class="small"></div>
+      <p class="muted small">Do not upload patient-derived data.</p>
+    </div>
+    <div class="card">
+      <h3>Layers</h3>
+      <div class="seg" id="layerSeg">
+        <button data-layer="conf" class="on">Confidence</button>
+        <button data-layer="pocket">Pockets</button>
+        <button data-layer="both">Both</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="optSpheres" checked> pocket volumes (translucent)</label>
+      <label class="chk"><input type="checkbox" id="optLining" checked> pocket-lining residues as sticks</label>
+      <label class="chk"><input type="checkbox" id="optLow"> fade residues with pLDDT &ge; 70</label>
+      <label class="chk"><input type="checkbox" id="optSpin"> auto-rotate</label>
+      <div class="legend" id="legend"></div>
+    </div>
+  </aside>
+
+  <section class="center">
+    <div class="card note" id="scenario"></div>
+    <div id="viewerWrap"><div id="viewer"></div><div id="tip" hidden></div>
+      <div class="vctl"><button id="vReset" class="ghost">Reset view</button><button id="vZoom" class="ghost">Zoom to pocket</button><button id="vShot" class="ghost">PNG</button></div>
+    </div>
+    <div class="card"><h3>pLDDT along the chain <span class="muted small">(shaded = pocket-lining residues; hover to find a residue in 3D)</span></h3><canvas id="trace" height="150"></canvas></div>
+  </section>
+
+  <aside class="side right">
+    <div class="card">
+      <h3>Cross-check <span class="muted small">pLDDT vs pocket</span></h3>
+      <div id="pocketTabs" class="seg"></div>
+      <div id="xcheck"></div>
+    </div>
+    <div class="card"><h3>Confidence mix</h3><canvas id="mix" height="120"></canvas>
+      <p class="muted small">Share of residues in each AlphaFold band: the selected pocket's lining vs the whole chain.</p></div>
+    <div class="card"><button id="csv" class="ghost">Export per-residue CSV</button></div>
+  </aside>
+</section>
+
+<section id="tab-compare" class="tab wide" hidden>
+  <div class="card"><h3>Every pocket in the demo set: druggability vs pocket-lining pLDDT</h3>
+    <p class="muted small">Each dot is one predicted pocket. Hollow ring = the same structure's <i>global</i> mean pLDDT (what people often look at instead). Click a dot to open it in the Explorer.</p>
+    <canvas id="scatter" width="760" height="420"></canvas></div>
+  <div class="card"><h3>Table</h3><div id="cmpTable"></div></div>
+</section>
+
+<section id="tab-study" class="tab wide" hidden>
+  <div class="card"><h3>Study results</h3><div id="studyBody"></div></div>
+</section>
+
+<section id="tab-audit" class="tab wide" hidden>
+  <div class="card"><h3>Audit trail <span id="auditBadge" class="badge"></span></h3>
+    <p class="muted small">Append-only, hash-chained and HMAC-signed. Entries record who did what and when, never the data itself. Newest first.</p>
+    <div id="auditBody"></div></div>
+</section>
+
+<script src="/vendor/3Dmol-min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
